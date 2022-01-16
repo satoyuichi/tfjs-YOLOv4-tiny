@@ -1,4 +1,5 @@
 const tf = require('@tensorflow/tfjs-node');
+const tfvis = require('@tensorflow/tfjs-vis');
 
 const model = createModel();
 model.summary();
@@ -7,6 +8,7 @@ model.compile({
   loss: 'categoricalCrossentropy',
   optimizer: 'adam'
 });
+// await train(model, data);
 
 function createModel() {
   const input = tf.input({shape: [416, 416, 3]});
@@ -244,4 +246,16 @@ function createSubLayers(index, input, filters) {
   }).apply(sub_conv2d_03);
 
   return sub_leakyReLU_03;
+}
+
+async function train(model, data) {
+  
+
+  return model.fit(trainXs, trainYs, {
+    batchSize: BATCH_SIZE,
+    validationData: [testXs, testYs],
+    epochs: 10,
+    shuffle: true,
+    callbacks: fitCallbacks
+  });
 }
