@@ -2,8 +2,7 @@ import {YoloImageData} from './data.js';
 
 async function showExamples(data) {
   // Create a container in the visor
-  const surface =
-        tfvis.visor().surface({ name: 'Input Data Examples', tab: 'Input Data'});
+  const surface = tfvis.visor().surface({ name: 'Input Data Examples', tab: 'Input Data'});
 
   // Get the examples
   const examples = data.nextTestBatch(20);
@@ -30,7 +29,7 @@ async function showExamples(data) {
 }
 
 async function run() {
-  const data = new MnistData();
+  const data = new YoloImageData();
   await data.load();
   await showExamples(data);
 }
