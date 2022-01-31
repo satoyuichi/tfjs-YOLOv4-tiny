@@ -1,37 +1,57 @@
 import {YoloImageData} from './data.js';
+import {Yolov4Model} from './model.js';
 
-async function showExamples(data) {
-  // Create a container in the visor
+function init (){
   const surface = tfvis.visor().surface({ name: 'Input Data Examples', tab: 'Input Data'});
+}
 
-  // Get the examples
-  const examples = data.nextTestBatch(20);
-  const numExamples = examples.xs.shape[0];
+async function train(model, data) {
+  const metrics = ['loss', 'val_loss', 'acc', 'val_acc'];
+  const container = {
+    name: 'Model Training', tab: 'Model', styles: { height: '1000px' }
+  };
+  const fitCallbacks = tfvis.show.fitCallbacks(container, metrics);
 
-  // Create a canvas element to render each example
-  for (let i = 0; i < numExamples; i++) {
-    const imageTensor = tf.tidy(() => {
-      // Reshape the image to 28x28 px
-      return examples.xs
-        .slice([i, 0], [1, examples.xs.shape[1]])
-        .reshape([28, 28, 1]);
-    });
+  const BATCH_SIZE = 10;
+  const TRAIN_DATA_SIZE = 100;
+  const TEST_DATA_SIZE = 20;
+  
+  const [trainXs, trainYs] = tf.tidy(() => {
+    const d = data.nextTrainBatch(TRAIN_DATA_SIZE);
+    return [
+      d.xs.reshape([TRAIN_DATA_SIZE, 416, 416, 3]),
+      d.labels
+    ];
+  });
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 28;
-    canvas.height = 28;
-    canvas.style = 'margin: 4px;';
-    await tf.browser.toPixels(imageTensor, canvas);
-    surface.drawArea.appendChild(canvas);
+  const [testXs, testYs] = tf.tidy(() => {
+    const d = data.nextTestBatch(TEST_DATA_SIZE);
+    return [
+      d.xs.reshape([TEST_DATA_SIZE, 416, 416, 3]),
+      d.labels
+    ];
+  });
 
-    imageTensor.dispose();
-  }
+ return model.fit(trainXs, trainYs, {
+    batchSize: BATCH_SIZE,
+    validationData: [testXs, testYs],
+    epochs: 10,
+    shuffle: true,
+    callbacks: fitCallbacks
+  });  
 }
 
 async function run() {
   const data = new YoloImageData();
+  const yolov4 = new Yolov4Model();
+  const model = yolov4.createModel();
+
+  init();
+  
+  tfvis.show.modelSummary({name: 'Model Architecture', tab: 'Model'}, model);
+
   await data.load();
-  await showExamples(data);
+  await train(model, data);
 }
 
 document.addEventListener('DOMContentLoaded', run);
