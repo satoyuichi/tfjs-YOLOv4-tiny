@@ -24,10 +24,6 @@ export class YoloImageData {
   }
 
   async load() {
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
     let filenames = [];
     await fetch(XML_ANNOTATION_PATH)
       .then(response => {
@@ -101,6 +97,13 @@ export class YoloImageData {
   // }
 
   async nextBatch(batchSize, data, index) {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const div = document.getElementById('image');
+    div.appendChild(canvas);
+
     const batchImagesArray = new Float32Array(batchSize * IMAGE_SIZE);
     const batchLabelsArray = new Uint8Array(batchSize * NUM_CLASSES);
 
@@ -110,7 +113,7 @@ export class YoloImageData {
       let annotation = this.annotations[idx];
       let url = `./VOCdevkit/VOC2007/JPEGImages/${annotation.filename}`;
 
-      let imgSrc = await new Promise((resolve, reject) => { 
+      let imageSource = await new Promise((resolve, reject) => { 
         let image= new Image();
         image.crossOrigin = "anonymous";
         image.src = url; 
@@ -118,6 +121,11 @@ export class YoloImageData {
           return resolve(image);
         }
       });
+
+      canvas.width = imageSource.naturalWidth; 
+      canvas.height = imageSource.naturalHeight;
+      ctx.drawImage(imageSource, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       
 //      const image = data[0].slice(idx * IMAGE_SIZE, idx * IMAGE_SIZE + IMAGE_SIZE);
 //      batchImagesArray.set(image, i * IMAGE_SIZE);
