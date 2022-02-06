@@ -14,32 +14,33 @@ async function train(model, data) {
 
   const BATCH_SIZE = 10;
 //  const TRAIN_DATA_SIZE = 100;
-  const TRAIN_DATA_SIZE = 1;
+  const TRAIN_DATA_SIZE = 10;
   const TEST_DATA_SIZE = 20;
   
   const [trainXs, trainYs] = tf.tidy(() => {
     const d = data.nextTrainBatch(TRAIN_DATA_SIZE);
-    return [
-      d.xs.reshape([TRAIN_DATA_SIZE, 416, 416, 3]),
-      d.labels
-    ];
+    return [];
+    // return [
+    //   d.xs.reshape([TRAIN_DATA_SIZE, 416, 416, 3]),
+    //   d.labels
+    // ];
   });
 
-  const [testXs, testYs] = tf.tidy(() => {
-    const d = data.nextTestBatch(TEST_DATA_SIZE);
-    return [
-      d.xs.reshape([TEST_DATA_SIZE, 416, 416, 3]),
-      d.labels
-    ];
-  });
+  // const [testXs, testYs] = tf.tidy(() => {
+  //   const d = data.nextTestBatch(TEST_DATA_SIZE);
+  //   return [
+  //     d.xs.reshape([TEST_DATA_SIZE, 416, 416, 3]),
+  //     d.labels
+  //   ];
+  // });
 
- return model.fit(trainXs, trainYs, {
-    batchSize: BATCH_SIZE,
-    validationData: [testXs, testYs],
-    epochs: 10,
-    shuffle: true,
-    callbacks: fitCallbacks
-  });  
+ // return model.fit(trainXs, trainYs, {
+ //    batchSize: BATCH_SIZE,
+ //    validationData: [testXs, testYs],
+ //    epochs: 10,
+ //    shuffle: true,
+ //    callbacks: fitCallbacks
+ //  });  
 }
 
 async function run() {

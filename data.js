@@ -15,6 +15,29 @@ const MNIST_LABELS_PATH = 'https://storage.googleapis.com/learnjs-data/model-bui
 
 const XML_ANNOTATION_PATH = 'http://localhost:8080/annotations.json';
 
+const CLASSES = {
+  aeroplane: 0,
+  bicycle: 0,
+  bird: 0,
+  boat: 0,
+  bottle: 0,
+  bus: 0,
+  car: 0,
+  cat: 0,
+  chair: 0,
+  cow: 0,
+  diningtable: 0,
+  dog: 0,
+  horse: 0,
+  motorbike: 0,
+  person: 0,
+  pottedplant: 0,
+  sheep: 0,
+  sofa: 0,
+  train: 0,
+  tvmonitor: 0,
+};
+
 export class YoloImageData {
   constructor() {
     this.shuffledTrainIndex = 0;
@@ -126,10 +149,10 @@ export class YoloImageData {
       canvas.height = imageSource.naturalHeight;
       ctx.drawImage(imageSource, 0, 0);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      
-//      const image = data[0].slice(idx * IMAGE_SIZE, idx * IMAGE_SIZE + IMAGE_SIZE);
-//      batchImagesArray.set(image, i * IMAGE_SIZE);
+      batchImagesArray.set(imageData, i * IMAGE_SIZE);
 
+      const label = new Uint8Array(this.createLabels(annotation));
+      batchLabelsArray.set(label, i * NUM_CLASSES);
 //      const label = data[1].slice(idx * NUM_CLASSES, idx * NUM_CLASSES + NUM_CLASSES);
 //      batchLabelsArray.set(label, i * NUM_CLASSES);
     }
@@ -138,5 +161,15 @@ export class YoloImageData {
     const labels = tf.tensor2d(batchLabelsArray, [batchSize, NUM_CLASSES]);
 
     return {xs, labels};
+  }
+
+  createLabels(annotation) {
+    let classes = Object.assign({}, CLASSES);
+
+    for (var obj of annotation.objects) {
+      classes[obj.name]++;
+    }
+
+    return Object.values(classes);
   }
 }
