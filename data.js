@@ -1,6 +1,6 @@
 //import * as tf from '@tensorflow/tfjs';
 
-const IMAGE_SIZE = 500 * 375;
+const IMAGE_SIZE = 416 * 416;
 const NUM_CLASSES = 20;
 //const NUM_DATASET_ELEMENTS = 5011;
 const NUM_DATASET_ELEMENTS = 100;
@@ -129,6 +129,7 @@ export class YoloImageData {
 
     const batchImagesArray = new Float32Array(batchSize * IMAGE_SIZE);
     const batchLabelsArray = new Uint8Array(batchSize * NUM_CLASSES);
+    const promises = [];
 
     for (let i = 0; i < batchSize; i++) {
       const idx = index();
@@ -136,40 +137,42 @@ export class YoloImageData {
       let annotation = this.annotations[idx];
       let url = `./VOCdevkit/VOC2007/JPEGImages/${annotation.filename}`;
 
-      let imageSource = await new Promise((resolve, reject) => { 
-        let image= new Image();
+      let imageSource = new Promise((resolve, reject) => { 
+        let image = new Image();
         image.crossOrigin = "anonymous";
         image.src = url; 
-        image.onload = function(){
-          return resolve(image);
+        image.onload = function() {
+//          canvas.width = image.naturalWidth; 
+//          canvas.height = image.naturalHeight;
+          canvas.width = 416;
+          canvas.height = 416;
+          ctx.drawImage(image, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          batchImagesArray.set(imageData, i * IMAGE_SIZE);
+
+          const label = new Uint8Array((annotation) => {
+            let classes = Object.assign({}, CLASSES);
+            for (var obj of annotation.objects) {
+              classes[obj.name]++;
+            }
+            return Object.values(classes);
+          });
+
+          batchLabelsArray.set(label, i * NUM_CLASSES);
+
+          resolve();
         }
       });
 
-      canvas.width = imageSource.naturalWidth; 
-      canvas.height = imageSource.naturalHeight;
-      ctx.drawImage(imageSource, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      batchImagesArray.set(imageData, i * IMAGE_SIZE);
-
-      const label = new Uint8Array(this.createLabels(annotation));
-      batchLabelsArray.set(label, i * NUM_CLASSES);
-//      const label = data[1].slice(idx * NUM_CLASSES, idx * NUM_CLASSES + NUM_CLASSES);
-//      batchLabelsArray.set(label, i * NUM_CLASSES);
+      promises.push(imageSource);
     }
 
+    await Promise.all(promises);
+    
     const xs = tf.tensor2d(batchImagesArray, [batchSize, IMAGE_SIZE]);
     const labels = tf.tensor2d(batchLabelsArray, [batchSize, NUM_CLASSES]);
 
     return {xs, labels};
-  }
-
-  createLabels(annotation) {
-    let classes = Object.assign({}, CLASSES);
-
-    for (var obj of annotation.objects) {
-      classes[obj.name]++;
-    }
-
-    return Object.values(classes);
   }
 }

@@ -16,15 +16,14 @@ async function train(model, data) {
 //  const TRAIN_DATA_SIZE = 100;
   const TRAIN_DATA_SIZE = 10;
   const TEST_DATA_SIZE = 20;
-  
-  const [trainXs, trainYs] = tf.tidy(() => {
-    const d = data.nextTrainBatch(TRAIN_DATA_SIZE);
-    return [];
-    // return [
-    //   d.xs.reshape([TRAIN_DATA_SIZE, 416, 416, 3]),
-    //   d.labels
-    // ];
-  });
+
+  const [trainXs, trainYs] = await data.nextTrainBatch(TRAIN_DATA_SIZE)
+        .then(d => {
+          return [
+            d.xs.reshape([TRAIN_DATA_SIZE, 416, 416, 3]),
+            d.labels
+          ];
+        });
 
   // const [testXs, testYs] = tf.tidy(() => {
   //   const d = data.nextTestBatch(TEST_DATA_SIZE);
