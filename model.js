@@ -167,7 +167,8 @@ export class Yolov4Model {
       strides: 1,
       padding: 'same',
       dilationRate: [1, 1],
-      name: 'conv2d_13'
+      name: 'conv2d_13',
+      activation: 'linear'
     }).apply(leakyReLU_12);
 
     //--------------------------------------------------------------------------------
@@ -191,7 +192,8 @@ export class Yolov4Model {
       strides: 1,
       padding: 'same',
       dilationRate: [1, 1],
-      name: 'conv2d_15'
+      name: 'conv2d_15',
+      activation: 'linear'
     }).apply(leakyReLU_14);
 
     //================================================================================
@@ -199,6 +201,15 @@ export class Yolov4Model {
     let model = tf.model({
       inputs: input,
       outputs: [conv2d_15, conv2d_13]
+    });
+
+    const optimizer = tf.train.adam();
+    model.compile({
+      optimizer: optimizer,
+      // loss: 'categoricalCrossentropy',
+      // metrics: ['accuracy'],
+      loss: {'conv2d_15': 'categoricalCrossentropy', 'conv2d_13': 'categoricalCrossentropy'},
+      metrics: {'conv2d_15': 'accuracy', 'conv2d_13': 'accuracy'}
     });
 
     return model;

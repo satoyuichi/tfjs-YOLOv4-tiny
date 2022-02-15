@@ -1,11 +1,11 @@
 //import * as tf from '@tensorflow/tfjs';
 
-const IMAGE_SIZE = 416 * 416;
+const IMAGE_SIZE = 416 * 416 * 3;
 const NUM_CLASSES = 20;
 //const NUM_DATASET_ELEMENTS = 5011;
 const NUM_DATASET_ELEMENTS = 100;
 
-const TRAIN_TEST_RATIO = 5 / 6;
+const TRAIN_TEST_RATIO = 4 / 5;
 
 const NUM_TRAIN_ELEMENTS = Math.floor(TRAIN_TEST_RATIO * NUM_DATASET_ELEMENTS);
 const NUM_TEST_ELEMENTS = NUM_DATASET_ELEMENTS - NUM_TRAIN_ELEMENTS;
@@ -112,12 +112,13 @@ export class YoloImageData {
       });
   }
 
-  // nextTestBatch(batchSize) {
-  //   return this.nextBatch(batchSize, [this.testImages, this.testLabels], () => {
-  //     this.shuffledTestIndex = (this.shuffledTestIndex + 1) % this.testIndices.length;
-  //     return this.testIndices[this.shuffledTestIndex];
-  //   });
-  // }
+  nextTestBatch(batchSize) {
+    return this.nextBatch(
+      batchSize, [this.testImages, this.testLabels], () => {
+        this.shuffledTestIndex = (this.shuffledTestIndex + 1) % this.testIndices.length;
+        return this.testIndices[this.shuffledTestIndex];
+    });
+  }
 
   async nextBatch(batchSize, data, index) {
     const img = new Image();
