@@ -170,6 +170,15 @@ export class Yolov4Model {
       name: 'conv2d_13',
       activation: 'linear'
     }).apply(leakyReLU_12);
+    let flatten_13_1 = tf.layers.flatten({
+      name: 'flatten_13_1'
+    }).apply(conv2d_13);
+    let dense_13_2 = tf.layers.dense({
+      units: 20,
+      kernelInitializer: 'varianceScaling',
+      activation: 'softmax',
+      name: 'dense_13_2'
+    }).apply(flatten_13_1);
 
     //--------------------------------------------------------------------------------
 
@@ -195,12 +204,21 @@ export class Yolov4Model {
       name: 'conv2d_15',
       activation: 'linear'
     }).apply(leakyReLU_14);
+    let flatten_15_1 = tf.layers.flatten({
+      name: 'flatten_15_1'
+    }).apply(conv2d_15);
+    let dense_15_2 = tf.layers.dense({
+      units: 20,
+      kernelInitializer: 'varianceScaling',
+      activation: 'softmax',
+      name: 'dense_15_2'
+    }).apply(flatten_15_1);
 
     //================================================================================
 
     let model = tf.model({
       inputs: input,
-      outputs: [conv2d_15, conv2d_13]
+      outputs: [dense_15_2, dense_13_2]
     });
 
     const optimizer = tf.train.adam();
@@ -208,8 +226,8 @@ export class Yolov4Model {
       optimizer: optimizer,
       // loss: 'categoricalCrossentropy',
       // metrics: ['accuracy'],
-      loss: {'conv2d_15': 'categoricalCrossentropy', 'conv2d_13': 'categoricalCrossentropy'},
-      metrics: {'conv2d_15': 'accuracy', 'conv2d_13': 'accuracy'}
+      loss: {'dense_15_2': 'categoricalCrossentropy', 'dense_13_2': 'categoricalCrossentropy'},
+      metrics: {'dense_15_2': 'accuracy', 'dense_13_2': 'accuracy'}
     });
 
     return model;

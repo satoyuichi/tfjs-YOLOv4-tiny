@@ -152,13 +152,11 @@ export class YoloImageData {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           batchImagesArray.set(imageData, i * IMAGE_SIZE);
 
-          const label = new Uint8Array((annotation) => {
-            let classes = Object.assign({}, CLASSES);
-            for (var obj of annotation.objects) {
-              classes[obj.name]++;
-            }
-            return Object.values(classes);
-          });
+          let classes = Object.assign({}, CLASSES);
+          for (var obj of annotation.objects) {
+            classes[obj.name]++;
+          }
+          const label = new Uint8Array(Object.values(classes));
 
           batchLabelsArray.set(label, i * NUM_CLASSES);
 

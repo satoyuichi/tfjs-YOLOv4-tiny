@@ -33,7 +33,7 @@ async function train(model, data) {
           ];
         });
 
-  return model.fit(trainXs, {'conv2d_15': trainYs, 'conv2d_13': trainYs}, {
+  return model.fit(trainXs, {'dense_15_2': trainYs, 'dense_13_2': trainYs}, {
     batchSize: BATCH_SIZE,
     validationData: [testXs, [testYs, testYs]],
     epochs: 10,
